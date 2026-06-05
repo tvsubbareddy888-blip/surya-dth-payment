@@ -5,7 +5,7 @@ const cors = require('cors');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 const CF_APP_ID = process.env.CF_APP_ID;
 const CF_SECRET_KEY = process.env.CF_SECRET_KEY;
