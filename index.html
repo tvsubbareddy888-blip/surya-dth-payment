@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surya DTH – DTH Services</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@300;400;600;700&family=Syne:wght@700;800&family=DM+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans Telugu','Syne',sans-serif;background:#0D0D1A;color:#F0EEE8;}
+.header{background:linear-gradient(135deg,#FF6B00,#FF9A3C);padding:20px 40px;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:28px;font-weight:800;color:white;letter-spacing:-0.5px;}
+.logo span{font-size:14px;display:block;font-weight:400;opacity:0.9;}
+.nav a{color:white;text-decoration:none;margin-left:20px;font-size:14px;}
+.hero{text-align:center;padding:80px 20px;background:linear-gradient(180deg,#13131F,#0D0D1A);}
+.hero h1{font-size:42px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FFD166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px;}
+.hero p{font-size:18px;color:#8888AA;max-width:600px;margin:0 auto 30px;}
+.hero-btn{background:linear-gradient(135deg,#FF6B00,#FF9A3C);color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:700;display:inline-block;}
+.services{padding:60px 20px;max-width:1000px;margin:0 auto;}
+.services h2{text-align:center;font-size:32px;font-weight:800;color:#FFD166;margin-bottom:40px;}
+.service-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;}
+.service-card{background:#13131F;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:24px;text-align:center;transition:transform .2s;}
+.service-card:hover{transform:translateY(-4px);}
+.service-icon{font-size:40px;margin-bottom:12px;}
+.service-name{font-size:18px;font-weight:700;color:#F0EEE8;margin-bottom:8px;}
+.service-desc{font-size:13px;color:#8888AA;line-height:1.5;}
+.service-price{font-size:20px;font-weight:700;color:#FF6B00;margin-top:12px;}
+.about{padding:60px 20px;background:#13131F;text-align:center;}
+.about h2{font-size:28px;font-weight:800;color:#FFD166;margin-bottom:20px;}
+.about p{font-size:16px;color:#8888AA;max-width:700px;margin:0 auto 10px;line-height:1.8;}
+.about .owner{font-size:18px;font-weight:700;color:#FF6B00;margin-top:20px;}
+.contact{padding:60px 20px;max-width:600px;margin:0 auto;text-align:center;}
+.contact h2{font-size:28px;font-weight:800;color:#FFD166;margin-bottom:30px;}
+.contact-info{background:#13131F;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:30px;}
+.contact-item{display:flex;align-items:center;gap:12px;margin-bottom:16px;font-size:15px;color:#F0EEE8;}
+.pay-section{padding:40px 20px;text-align:center;background:linear-gradient(135deg,rgba(255,107,0,0.1),rgba(255,209,102,0.05));}
+.pay-section h2{font-size:24px;font-weight:800;color:#F0EEE8;margin-bottom:16px;}
+.pay-btn{background:linear-gradient(135deg,#FF6B00,#FF9A3C);color:white;padding:14px 32px;border-radius:12px;text-decoration:none;font-size:16px;font-weight:700;display:inline-block;margin-top:10px;}
+.footer{background:#080810;padding:20px;text-align:center;color:#8888AA;font-size:13px;}
+@media(max-width:600px){.hero h1{font-size:28px;}.header{padding:16px 20px;}.nav{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    🌟 Surya DTH
+    <span>DTH Services Provider</span>
+  </div>
+  <nav class="nav">
+    <a href="#services">Services</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <a href="payment.html">Pay Now</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <h1>Surya DTH Services</h1>
+  <p>Andhra Pradesh & Telangana లో అత్యుత్తమ DTH సేవలు — New Connection, Recharge, Repair అన్నీ ఒకే చోట!</p>
+  <a href="payment.html" class="hero-btn">💳 Pay Now</a>
+</div>
+
+<div class="services" id="services">
+  <h2>మా సేవలు (Our Services)</h2>
+  <div class="service-grid">
+    <div class="service-card">
+      <div class="service-icon">📡</div>
+      <div class="service-name">New Connection</div>
+      <div class="service-desc">కొత్త DTH connection బిగించడం — అన్ని leading brands అందుబాటులో ఉన్నాయి</div>
+      <div class="service-price">₹500 నుండి</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🔄</div>
+      <div class="service-name">Recharge</div>
+      <div class="service-desc">మీ DTH account recharge — అన్ని plans అందుబాటులో</div>
+      <div class="service-price">₹200 నుండి</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🔧</div>
+      <div class="service-name">Repair</div>
+      <div class="service-desc">Signal problem, dish alignment, set-top box repair అన్నీ</div>
+      <div class="service-price">₹150 నుండి</div>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📦</div>
+      <div class="service-name">New Box</div>
+      <div class="service-desc">కొత్త set-top box installation తో పాటు setup చేయడం</div>
+      <div class="service-price">₹800 నుండి</div>
+    </div>
+  </div>
+</div>
+
+<div class="about" id="about">
+  <h2>మా గురించి (About Us)</h2>
+  <p>Surya DTH అనేది Andhra Pradesh & Telangana లో నమ్మకమైన DTH service provider. మా అనుభవజ్ఞులైన technicians మీ ఇంటికి వచ్చి service అందిస్తారు.</p>
+  <p>We provide reliable and quick DTH services including new connections, recharges, repairs, and set-top box installations across villages and towns.</p>
+  <div class="owner">👤 Owner: VENKATA SUBBAREDDY THIPPALURI</div>
+  <p style="margin-top:8px;color:#8888AA;font-size:14px;">GST & Business Registration: Surya DTH Services</p>
+</div>
+
+<div class="pay-section">
+  <h2>💳 Online Payment చేయండి</h2>
+  <p style="color:#8888AA;">మా technician service చేసిన తర్వాత secure గా online payment చేయవచ్చు</p>
+  <a href="payment.html" class="pay-btn">🔒 Pay Now — Secure Cashfree Gateway</a>
+</div>
+
+<div class="contact" id="contact">
+  <h2>సంప్రదించండి (Contact)</h2>
+  <div class="contact-info">
+    <div class="contact-item">📍 Andhra Pradesh & Telangana</div>
+    <div class="contact-item">📧 aponlinevellatur@gmail.com</div>
+    <div class="contact-item">🌐 lucky-swan-e72bbe.netlify.app</div>
+    <div class="contact-item">👤 VENKATA SUBBAREDDY THIPPALURI</div>
+  </div>
+</div>
+
+<div class="footer">
+  © 2026 Surya DTH Services | Owner: VENKATA SUBBAREDDY THIPPALURI | All Rights Reserved
+</div>
+
+</body>
+</html>
