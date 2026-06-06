@@ -1,16 +1,21 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 const CF_APP_ID = process.env.CF_APP_ID;
 const CF_SECRET_KEY = process.env.CF_SECRET_KEY;
 const SCRIPT_URL = process.env.SCRIPT_URL;
 const SITE_URL = process.env.SITE_URL || "https://surya-dth-payment.onrender.com";
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.get('/api/payment', async (req, res) => {
   const { amount, mobile, customer, tech, village, vccdsn, service } = req.query;
