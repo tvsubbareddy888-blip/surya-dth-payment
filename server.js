@@ -12,10 +12,23 @@ const CF_APP_ID = process.env.CF_APP_ID;
 const CF_SECRET_KEY = process.env.CF_SECRET_KEY;
 const SCRIPT_URL = process.env.SCRIPT_URL;
 const SITE_URL = process.env.SITE_URL || "https://surya-dth-payment.onrender.com";
+const OWNER_PHONE = "919963246388";
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+// Send WhatsApp notification via CallMeBot
+async function sendWhatsApp(message) {
+  try {
+    const apiKey = process.env.WHATSAPP_API_KEY || "";
+    if (!apiKey) return;
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${OWNER_PHONE}&text=${encodeURIComponent(message)}&apikey=${apiKey}`;
+    await fetch(url);
+  } catch(e) {
+    console.log("WhatsApp notification failed:", e.toString());
+  }
+}
 
 app.get('/api/payment', async (req, res) => {
   const { amount, mobile, customer, tech, village, vccdsn, service } = req.query;
@@ -39,15 +52,15 @@ app.get('/api/payment', async (req, res) => {
           customer_name: customer,
           customer_phone: mobile
         },
-        order_meta: {
-          return_url: SITE_URL + "/payment.html"
-        }
+        order_meta: { return_url: SITE_URL + "/payment.html" }
       })
     });
     const cfData = await cfRes.json();
     if (!cfData.payment_session_id) return res.json({ error: JSON.stringify(cfData) });
+
     const saveUrl = `${SCRIPT_URL}?action=save&amount=${encodeURIComponent(amount)}&tech=${encodeURIComponent(tech||"")}&customer=${encodeURIComponent(customer)}&mobile=${encodeURIComponent(mobile)}&village=${encodeURIComponent(village||"")}&vccdsn=${encodeURIComponent(vccdsn||"")}&service=${encodeURIComponent(service||"")}&order_id=${orderId}`;
     await fetch(saveUrl).catch(() => {});
+
     res.json({ payment_session_id: cfData.payment_session_id, order_id: orderId });
   } catch (error) {
     res.json({ error: error.toString() });
@@ -59,8 +72,17 @@ app.post('/api/webhook', async (req, res) => {
     const body = req.body;
     if (body.data && body.data.order) {
       const orderId = body.data.order.order_id;
+      const amount = body.data.order.order_amount;
       const status = body.data.payment && body.data.payment.payment_status === "SUCCESS" ? "SUCCESS" : "FAILED";
+      const customerName = body.data.customer_details ? body.data.customer_details.customer_name : "Customer";
+      const customerPhone = body.data.customer_details ? body.data.customer_details.customer_phone : "";
+
       await fetch(`${SCRIPT_URL}?action=updatestatus&order_id=${orderId}&status=${status}`).catch(() => {});
+
+      if (status === "SUCCESS") {
+        const msg = `✅ *Surya DTH Payment Received!*\n\n👤 Customer: ${customerName}\n📱 Mobile: ${customerPhone}\n💰 Amount: ₹${amount}\n🔖 Order: ${orderId}`;
+        await sendWhatsApp(msg);
+      }
     }
     res.json({ status: "received" });
   } catch (error) {

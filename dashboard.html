@@ -13,7 +13,9 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;position:relative;z-index:1;}
 .brand-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FFD166);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .brand-sub{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase;}
+.header-btns{display:flex;gap:8px;}
 .refresh-btn{background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.2);color:var(--orange);padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Mono',monospace;}
+.notif-btn{background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.2);color:var(--green);padding:8px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-family:'DM Mono',monospace;}
 .stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;position:relative;z-index:1;}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative;overflow:hidden;}
 .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
@@ -52,8 +54,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .mobile-num{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
 .date-time{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
 .vc-num{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;}
-.share-btn{background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.2);color:#25D366;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:4px;}
-.share-btn:hover{background:rgba(37,211,102,0.2);}
+.share-btn{background:rgba(37,211,102,0.1);border:1px solid rgba(37,211,102,0.2);color:#25D366;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;}
 .empty{text-align:center;padding:40px;color:var(--muted);}
 .empty-icon{font-size:32px;display:block;margin-bottom:10px;}
 .loading-box{text-align:center;padding:30px;color:var(--muted);}
@@ -70,7 +71,10 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="brand-name">🌟 Surya DTH</div>
     <div class="brand-sub">Owner Dashboard</div>
   </div>
-  <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+  <div class="header-btns">
+    <button class="notif-btn" onclick="enableNotifications()" id="notifBtn">🔔 Notifications</button>
+    <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+  </div>
 </div>
 
 <div class="stats">
@@ -102,16 +106,75 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 
 <script>
 let allData = [];
+let lastCount = 0;
+let notificationsEnabled = false;
+
+// Request notification permission on load
+window.addEventListener('load', () => {
+  if ("Notification" in window) {
+    if (Notification.permission === "granted") {
+      notificationsEnabled = true;
+      document.getElementById('notifBtn').textContent = '🔔 ON';
+      document.getElementById('notifBtn').style.background = 'rgba(6,214,160,0.2)';
+    }
+  }
+});
+
+function enableNotifications() {
+  if (!("Notification" in window)) {
+    alert("మీ browser notifications support చేయడం లేదు!");
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      notificationsEnabled = true;
+      document.getElementById('notifBtn').textContent = '🔔 ON';
+      document.getElementById('notifBtn').style.background = 'rgba(6,214,160,0.2)';
+      new Notification("Surya DTH", {
+        body: "✅ Notifications enabled! Payment వచ్చినప్పుడు notify అవుతుంది!",
+        icon: "https://surya-dth-payment.onrender.com/favicon.ico"
+      });
+    } else {
+      alert("Notifications allow చేయండి!");
+    }
+  });
+}
+
+function sendNotification(record) {
+  if (notificationsEnabled && Notification.permission === "granted") {
+    new Notification("💰 Surya DTH - Payment Received!", {
+      body: `✅ ${record.customer} నుండి ₹${record.amount} payment!\n🔧 ${record.tech} | ${record.service}`,
+      icon: "https://surya-dth-payment.onrender.com/favicon.ico",
+      vibrate: [200, 100, 200]
+    });
+  }
+}
 
 function loadData() {
-  document.getElementById('paymentList').innerHTML = '<div class="loading-box"><div class="spinner"></div>Loading...</div>';
-  document.getElementById('recordCount').textContent = 'Loading...';
-
   fetch('/api/data?action=getdata')
     .then(r => r.json())
     .then(res => {
       if (res.data) {
-        allData = res.data.reverse();
+        const newData = res.data.reverse();
+
+        // Check for new SUCCESS payments
+        if (lastCount > 0 && newData.length > lastCount) {
+          const newRecords = newData.slice(0, newData.length - lastCount);
+          newRecords.filter(r => r.status === 'SUCCESS').forEach(r => sendNotification(r));
+        }
+
+        // Check for status changes to SUCCESS
+        if (lastCount > 0) {
+          newData.forEach((r, i) => {
+            const old = allData.find(o => o.order_id === r.order_id);
+            if (old && old.status !== 'SUCCESS' && r.status === 'SUCCESS') {
+              sendNotification(r);
+            }
+          });
+        }
+
+        lastCount = newData.length;
+        allData = newData;
         updateStats();
         renderList(allData);
       } else {
@@ -158,8 +221,7 @@ function shareWhatsApp(r) {
 function renderList(data) {
   document.getElementById('recordCount').textContent = data.length + ' records';
   if (!data.length) { showEmpty('Records లేవు'); return; }
-
-  document.getElementById('paymentList').innerHTML = data.map((r, i) => `
+  document.getElementById('paymentList').innerHTML = data.map(r => `
     <div class="payment-item">
       <div class="item-top">
         <span class="customer-name">${r.customer || '–'}</span>
@@ -177,9 +239,7 @@ function renderList(data) {
       </div>
       <div class="item-bot">
         <span class="date-time">${r.date ? new Date(r.date).toLocaleDateString('en-IN') : '–'}</span>
-        <button class="share-btn" onclick="shareWhatsApp(${JSON.stringify(r).replace(/"/g, '&quot;')})">
-          📤 WhatsApp
-        </button>
+        <button class="share-btn" onclick='shareWhatsApp(${JSON.stringify(r)})'>📤 WhatsApp</button>
       </div>
     </div>
   `).join('');
@@ -191,7 +251,7 @@ function showEmpty(msg) {
 }
 
 loadData();
-setInterval(loadData, 30000);
+setInterval(loadData, 15000);
 </script>
 </body>
 </html>
