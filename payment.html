@@ -95,11 +95,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="field full">
         <label>📸 STB Photo (Optional)</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <button type="button" onclick="document.getElementById('photoFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:11px 16px;cursor:pointer;font-size:14px;white-space:nowrap;">📷 Photo తీయండి</button>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button type="button" onclick="document.getElementById('cameraFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;">📷 Camera</button>
+          <button type="button" onclick="document.getElementById('galleryFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;">🖼️ Gallery</button>
           <span id="photoStatus" style="font-size:12px;color:#8888AA;">Photo select చేయండి</span>
         </div>
-        <input type="file" id="photoFile" accept="image/*" style="display:none;">
+        <input type="file" id="cameraFile" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="galleryFile" accept="image/*" style="display:none;">
       </div>
       <div class="field full">
         <label>సర్వీస్</label>
@@ -158,7 +160,8 @@ const techParam = urlParams.get('tech');
 const validTechs = ['Mahesh', 'Ramanji', 'Viswanath', 'Mohan'];
 
 window.addEventListener("load", async () => {
-  document.getElementById('photoFile').addEventListener('change', photoSelected);
+  document.getElementById('cameraFile').addEventListener('change', photoSelected);
+  document.getElementById('galleryFile').addEventListener('change', photoSelected);
   if (typeof Cashfree !== "undefined") cashfree = Cashfree({ mode: "production" });
 
   // Tech set చేయి
@@ -250,9 +253,11 @@ function resetBtn() {
 }
 
 function photoSelected() {
-  const input = document.getElementById('photoFile');
-  if (input.files && input.files[0]) {
-    document.getElementById('photoStatus').textContent = '✅ Photo ready!';
+  const cam = document.getElementById('cameraFile');
+  const gal = document.getElementById('galleryFile');
+  const file = (cam.files && cam.files[0]) ? cam.files[0] : (gal.files && gal.files[0]) ? gal.files[0] : null;
+  if (file) {
+    document.getElementById('photoStatus').textContent = '✅ Photo ready! (' + (file.size/1024).toFixed(0) + ' KB)';
     document.getElementById('photoStatus').style.color = '#06D6A0';
   }
 }
@@ -266,7 +271,9 @@ async function startPayment() {
   const village = document.getElementById('village').value.trim();
   const vccdsn = document.getElementById('vccdsn').value.trim();
   const service = document.getElementById('service').value;
-  const photoFile = document.getElementById('photoFile').files[0];
+  const cam = document.getElementById('cameraFile');
+  const gal = document.getElementById('galleryFile');
+  const photoFile = (cam.files && cam.files[0]) ? cam.files[0] : (gal.files && gal.files[0]) ? gal.files[0] : null;
 
   if (!customer || !mobile || !amount) { showStatus('error', '⚠️ పేరు, మొబైల్, మొత్తం తప్పనిసరి!'); return; }
   if (mobile.length !== 10) { showStatus('error', '⚠️ 10 అంకెల మొబైల్ నంబర్!'); return; }
