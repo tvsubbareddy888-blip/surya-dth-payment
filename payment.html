@@ -266,16 +266,25 @@ async function startPayment() {
 
   let photoUrl = '';
 
-  // Photo upload చేయి
+  // Photo Cloudinary కి direct upload
   if (photoFile) {
     showStatus('loading', '📸 Photo upload అవుతోంది...');
     try {
-      const formData = new FormData();
-      formData.append('photo', photoFile);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
-      if (uploadData.url) photoUrl = uploadData.url;
-    } catch(e) {}
+      const CLOUD_NAME = 'zlogzqnj';
+      const UPLOAD_PRESET = 'surya_dth';
+      const fd = new FormData();
+      fd.append('file', photoFile);
+      fd.append('upload_preset', UPLOAD_PRESET);
+      fd.append('folder', 'surya-dth');
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: fd
+      });
+      const cloudData = await cloudRes.json();
+      if (cloudData.secure_url) photoUrl = cloudData.secure_url;
+    } catch(e) {
+      console.log('Photo upload failed:', e);
+    }
   }
 
   showStatus('loading', 'Cashfree తో కనెక్ట్ అవుతోంది...');
