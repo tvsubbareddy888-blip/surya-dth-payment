@@ -127,8 +127,17 @@ app.get('/api/payment', async (req, res) => {
     const cfData = await cfRes.json();
     if (!cfData.payment_session_id) return res.json({ error: JSON.stringify(cfData) });
 
-    const saveUrl = `${SCRIPT_URL}?action=save&amount=${encodeURIComponent(amount)}&tech=${encodeURIComponent(tech||"")}&customer=${encodeURIComponent(customer)}&mobile=${encodeURIComponent(mobile)}&village=${encodeURIComponent(village||"")}&vccdsn=${encodeURIComponent(vccdsn||"")}&service=${encodeURIComponent(service||"")}&order_id=${orderId}&photo_url=${encodeURIComponent(photoUrl||"")}`;
-    await fetch(saveUrl).catch(() => {});
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'save',
+        amount, tech: tech||"", customer, mobile,
+        village: village||"", vccdsn: vccdsn||"",
+        service: service||"", order_id: orderId,
+        photo_url: photoUrl||""
+      })
+    }).catch(() => {});
 
     res.json({ payment_session_id: cfData.payment_session_id, order_id: orderId });
   } catch (error) {
