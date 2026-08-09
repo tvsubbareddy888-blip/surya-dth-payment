@@ -26,6 +26,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .field input,.field select{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--text);font-family:'Noto Sans Telugu',sans-serif;outline:none;transition:all .2s;width:100%;-webkit-appearance:none;}
 .field input:focus,.field select:focus{border-color:rgba(255,107,0,0.5);background:rgba(255,107,0,0.05);}
 .field input::placeholder{color:var(--muted);opacity:.7;}
+.tech-display{background:rgba(255,107,0,0.1);border:1px solid rgba(255,107,0,0.3);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--orange);font-family:'DM Mono',monospace;font-weight:700;}
 .select-wrap{position:relative;}
 .select-wrap::after{content:'▾';position:absolute;right:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
 .field select option{background:#1A1A2E;}
@@ -67,22 +68,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     <div class="grid">
       <div class="field">
         <label>టెక్నీషియన్</label>
-        <div class="select-wrap">
-          <select id="tech">
-            <option value="Mahesh">Mahesh</option>
-            <option value="Ramanji">Ramanji</option>
-            <option value="Viswanath">Viswanath</option>
-            <option value="Mohan">Mohan</option>
-          </select>
-        </div>
-      </div>
-      <div class="field full">
-        <label>కస్టమర్ పేరు</label>
-        <input type="text" id="customer" placeholder="పూర్తి పేరు" required>
+        <div class="tech-display" id="techDisplay">Loading...</div>
+        <input type="hidden" id="tech">
       </div>
       <div class="field">
         <label>విలేజ్</label>
         <input type="text" id="village" placeholder="విలేజ్ పేరు">
+      </div>
+      <div class="field full">
+        <label>కస్టమర్ పేరు</label>
+        <input type="text" id="customer" placeholder="పూర్తి పేరు" required>
       </div>
       <div class="field">
         <label>మొబైల్</label>
@@ -149,8 +144,32 @@ let isProcessing = false;
 let codeReader = null;
 let allCustomers = [];
 
+// URL నుండి tech parameter తీసుకో
+const urlParams = new URLSearchParams(window.location.search);
+const techParam = urlParams.get('tech');
+const validTechs = ['Mahesh', 'Ramanji', 'Viswanath', 'Mohan'];
+
 window.addEventListener("load", async () => {
   if (typeof Cashfree !== "undefined") cashfree = Cashfree({ mode: "production" });
+
+  // Tech set చేయి
+  if (techParam && validTechs.includes(techParam)) {
+    document.getElementById('tech').value = techParam;
+    document.getElementById('techDisplay').textContent = '👨‍🔧 ' + techParam;
+  } else {
+    // Default — dropdown show చేయి
+    document.getElementById('techDisplay').outerHTML = `
+      <div class="select-wrap">
+        <select id="tech">
+          <option value="Mahesh">Mahesh</option>
+          <option value="Ramanji">Ramanji</option>
+          <option value="Viswanath">Viswanath</option>
+          <option value="Mohan">Mohan</option>
+        </select>
+      </div>`;
+    document.getElementById('techDisplay') && document.getElementById('techDisplay').remove();
+  }
+
   try {
     const res = await fetch('/api/data?action=getdata');
     const data = await res.json();
@@ -158,12 +177,11 @@ window.addEventListener("load", async () => {
   } catch(e) {}
 });
 
-// Clean mobile number — remove +91, 0, spaces, dashes — keep only 10 digits
 function cleanMobileNumber(raw) {
-  let num = raw.replace(/\D/g, ''); // remove non-digits
-  if (num.startsWith('91') && num.length === 12) num = num.slice(2); // remove 91
-  if (num.startsWith('0') && num.length === 11) num = num.slice(1); // remove leading 0
-  return num.slice(0, 10); // max 10 digits
+  let num = raw.replace(/\D/g, '');
+  if (num.startsWith('91') && num.length === 12) num = num.slice(2);
+  if (num.startsWith('0') && num.length === 11) num = num.slice(1);
+  return num.slice(0, 10);
 }
 
 function handleMobilePaste(event) {
@@ -175,8 +193,7 @@ function handleMobilePaste(event) {
 }
 
 function cleanMobile(input) {
-  const cleaned = cleanMobileNumber(input.value);
-  input.value = cleaned;
+  input.value = cleanMobileNumber(input.value);
 }
 
 async function autoFillVC() {
@@ -235,6 +252,7 @@ function startPayment() {
 
   if (!customer || !mobile || !amount) { showStatus('error', '⚠️ పేరు, మొబైల్, మొత్తం తప్పనిసరి!'); return; }
   if (mobile.length !== 10) { showStatus('error', '⚠️ 10 అంకెల మొబైల్ నంబర్!'); return; }
+  if (!tech) { showStatus('error', '⚠️ టెక్నీషియన్ select చేయండి!'); return; }
 
   isProcessing = true;
   document.getElementById('payBtn').disabled = true;
