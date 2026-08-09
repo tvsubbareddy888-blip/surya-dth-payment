@@ -99,7 +99,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <button type="button" onclick="document.getElementById('photoFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:11px 16px;cursor:pointer;font-size:14px;white-space:nowrap;">📷 Photo తీయండి</button>
           <span id="photoStatus" style="font-size:12px;color:#8888AA;">Photo select చేయండి</span>
         </div>
-        <input type="file" id="photoFile" accept="image/*" capture="environment" style="display:none;" onchange="photoSelected(this)">
+        <input type="file" id="photoFile" accept="image/*" style="display:none;">
       </div>
       <div class="field full">
         <label>సర్వీస్</label>
@@ -158,6 +158,7 @@ const techParam = urlParams.get('tech');
 const validTechs = ['Mahesh', 'Ramanji', 'Viswanath', 'Mohan'];
 
 window.addEventListener("load", async () => {
+  document.getElementById('photoFile').addEventListener('change', photoSelected);
   if (typeof Cashfree !== "undefined") cashfree = Cashfree({ mode: "production" });
 
   // Tech set చేయి
@@ -248,10 +249,10 @@ function resetBtn() {
   document.getElementById('statusBox').style.display = 'none';
 }
 
-function photoSelected(input) {
+function photoSelected() {
+  const input = document.getElementById('photoFile');
   if (input.files && input.files[0]) {
-    const file = input.files[0];
-    document.getElementById('photoStatus').textContent = '✅ ' + file.name;
+    document.getElementById('photoStatus').textContent = '✅ Photo ready!';
     document.getElementById('photoStatus').style.color = '#06D6A0';
   }
 }
