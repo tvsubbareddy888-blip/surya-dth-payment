@@ -93,10 +93,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <button class="scan-btn" onclick="openScanner()" title="Barcode Scan">📷</button>
         </div>
       </div>
-      <div class="field">
+      <div class="field full">
         <label>📸 STB Photo (Optional)</label>
-        <input type="file" id="photoFile" accept="image/*" capture="environment" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 13px;font-size:13px;color:#8888AA;">
-        <span id="photoStatus" style="font-size:11px;color:#06D6A0;display:none;">✅ Photo ready!</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button type="button" onclick="document.getElementById('photoFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:11px 16px;cursor:pointer;font-size:14px;white-space:nowrap;">📷 Photo తీయండి</button>
+          <span id="photoStatus" style="font-size:12px;color:#8888AA;">Photo select చేయండి</span>
+        </div>
+        <input type="file" id="photoFile" accept="image/*" capture="environment" style="display:none;" onchange="photoSelected(this)">
       </div>
       <div class="field full">
         <label>సర్వీస్</label>
@@ -243,6 +246,14 @@ function resetBtn() {
   document.getElementById('payBtn').disabled = false;
   document.getElementById('payBtn').innerHTML = '🔒 Secure Pay చేయండి';
   document.getElementById('statusBox').style.display = 'none';
+}
+
+function photoSelected(input) {
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    document.getElementById('photoStatus').textContent = '✅ ' + file.name;
+    document.getElementById('photoStatus').style.color = '#06D6A0';
+  }
 }
 
 async function startPayment() {
