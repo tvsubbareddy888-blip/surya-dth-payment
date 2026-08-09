@@ -93,6 +93,11 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <button class="scan-btn" onclick="openScanner()" title="Barcode Scan">📷</button>
         </div>
       </div>
+      <div class="field">
+        <label>📸 STB Photo (Optional)</label>
+        <input type="file" id="photoFile" accept="image/*" capture="environment" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px 13px;font-size:13px;color:#8888AA;">
+        <span id="photoStatus" style="font-size:11px;color:#06D6A0;display:none;">✅ Photo ready!</span>
+      </div>
       <div class="field full">
         <label>సర్వీస్</label>
         <div class="select-wrap">
@@ -240,7 +245,7 @@ function resetBtn() {
   document.getElementById('statusBox').style.display = 'none';
 }
 
-function startPayment() {
+async function startPayment() {
   if (isProcessing) return;
   const customer = document.getElementById('customer').value.trim();
   const mobile = document.getElementById('mobile').value.trim();
@@ -249,6 +254,7 @@ function startPayment() {
   const village = document.getElementById('village').value.trim();
   const vccdsn = document.getElementById('vccdsn').value.trim();
   const service = document.getElementById('service').value;
+  const photoFile = document.getElementById('photoFile').files[0];
 
   if (!customer || !mobile || !amount) { showStatus('error', '⚠️ పేరు, మొబైల్, మొత్తం తప్పనిసరి!'); return; }
   if (mobile.length !== 10) { showStatus('error', '⚠️ 10 అంకెల మొబైల్ నంబర్!'); return; }
@@ -257,9 +263,24 @@ function startPayment() {
   isProcessing = true;
   document.getElementById('payBtn').disabled = true;
   document.getElementById('payBtn').innerHTML = '⏳ Processing...';
+
+  let photoUrl = '';
+
+  // Photo upload చేయి
+  if (photoFile) {
+    showStatus('loading', '📸 Photo upload అవుతోంది...');
+    try {
+      const formData = new FormData();
+      formData.append('photo', photoFile);
+      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+      const uploadData = await uploadRes.json();
+      if (uploadData.url) photoUrl = uploadData.url;
+    } catch(e) {}
+  }
+
   showStatus('loading', 'Cashfree తో కనెక్ట్ అవుతోంది...');
 
-  const params = new URLSearchParams({ tech, village, customer, mobile, vccdsn, service, amount });
+  const params = new URLSearchParams({ tech, village, customer, mobile, vccdsn, service, amount, photoUrl });
 
   fetch(`/api/payment?${params.toString()}`)
     .then(r => r.json())
