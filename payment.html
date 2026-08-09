@@ -271,9 +271,10 @@ async function startPayment() {
   const village = document.getElementById('village').value.trim();
   const vccdsn = document.getElementById('vccdsn').value.trim();
   const service = document.getElementById('service').value;
-  const cam = document.getElementById('cameraFile');
-  const gal = document.getElementById('galleryFile');
-  const photoFile = (cam.files && cam.files[0]) ? cam.files[0] : (gal.files && gal.files[0]) ? gal.files[0] : null;
+  const camEl = document.getElementById('cameraFile');
+  const galEl = document.getElementById('galleryFile');
+  const photoFile = (camEl && camEl.files && camEl.files[0]) ? camEl.files[0] : (galEl && galEl.files && galEl.files[0]) ? galEl.files[0] : null;
+  console.log('Photo file:', photoFile ? photoFile.name : 'none');
 
   if (!customer || !mobile || !amount) { showStatus('error', '⚠️ పేరు, మొబైల్, మొత్తం తప్పనిసరి!'); return; }
   if (mobile.length !== 10) { showStatus('error', '⚠️ 10 అంకెల మొబైల్ నంబర్!'); return; }
