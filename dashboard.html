@@ -77,6 +77,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="header-btns">
     <button class="notif-btn" onclick="enableNotifications()" id="notifBtn">🔔 Notify</button>
     <button class="bulk-btn" onclick="bulkShare()" id="bulkBtn">📤 Bulk Share</button>
+    <button class="refresh-btn" onclick="downloadExcel()" style="background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.2);color:#06D6A0;">⬇️ Excel</button>
     <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
   </div>
 </div>
@@ -163,6 +164,57 @@ function bulkShare() {
   window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
+function downloadExcel() {
+  if (!filteredData.length) { alert("Data లేదు!"); return; }
+
+  const headers = [
+    "TECHNICIAN NAME", "LC NO", "new/winback", "CUSTOMER Name",
+    "VC/ ID", "Mobile Phone Number", "NEW BOX COMPANY", "VILLAGE",
+    "ALTERNATIVE MOBILE", "Created on", "Next Follow-up Date",
+    "PACK", "Notes", "COST AMOUNT", "tech amount", "remaing amount",
+    "PAID", "BALANCE", "REMARK 2", "PHOTO LINK"
+  ];
+
+  const rows = filteredData.map(r => [
+    r.tech || "",
+    "",
+    "new",
+    r.customer || "",
+    r.vccdsn || "",
+    r.mobile || "",
+    "",
+    r.village || "",
+    "",
+    r.date ? new Date(r.date).toLocaleDateString('en-IN') : "",
+    "",
+    r.service || "",
+    "",
+    r.amount || "",
+    "",
+    "",
+    r.status === "SUCCESS" ? r.amount : "",
+    r.status === "SUCCESS" ? "0" : r.amount,
+    r.status || "",
+    r.photo_url || ""
+  ]);
+
+  // Create CSV
+  const csvContent = [headers, ...rows]
+    .map(row => row.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(','))
+    .join('
+');
+
+  // Add BOM for Telugu support
+  const BOM = '﻿';
+  const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'SuryaDTH_' + new Date().toLocaleDateString('en-IN').replace(/\//g, '-') + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function loadData() {
   fetch('/api/data?action=getdata')
     .then(r => r.json())
@@ -240,7 +292,7 @@ function renderList(data) {
         <div class="item-mid">
           <span class="mobile-num">📱 ${r.mobile || '–'}</span>
           ${r.vccdsn ? `<span class="vc-num">🔢 VC: ${r.vccdsn}</span>` : ''}
-          ${r.photo_url ? `<a href="${r.photo_url}" target="_blank" style="color:#FFD166;font-size:11px;font-family:DM Mono,monospace;text-decoration:none;">📸 Photo చూడండి</a>` : ''}
+          ${r.photo_url ? `<a href="${r.photo_url}" target="_blank" style="background:rgba(255,209,102,0.1);border:1px solid rgba(255,209,102,0.2);color:#FFD166;padding:3px 8px;border-radius:5px;font-size:11px;font-family:DM Mono,monospace;text-decoration:none;">📸 Photo</a>` : ''}
         </div>
         <div class="item-bot">
           <span class="date-time">${r.date ? new Date(r.date).toLocaleDateString('en-IN') : '–'}</span>
