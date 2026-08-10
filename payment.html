@@ -194,6 +194,24 @@ window.addEventListener("load", async () => {
   } catch(e) {}
 });
 
+async function resizeImage(file, maxWidth, maxHeight) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+      if (h > maxHeight) { w = w * maxHeight / h; h = maxHeight; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(resolve, 'image/jpeg', 0.8);
+    };
+    img.src = url;
+  });
+}
+
 async function uploadPhoto(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -201,8 +219,10 @@ async function uploadPhoto(e) {
   document.getElementById('photoStatus').style.color = '#FFD166';
   document.getElementById('waShareBtn').style.display = 'none';
   try {
+    // Resize image before upload
+    const resized = await resizeImage(file, 1200, 1200);
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', resized, 'photo.jpg');
     fd.append('upload_preset', UPLOAD_PRESET);
     const res = await fetch('https://api.cloudinary.com/v1_1/' + CLOUD_NAME + '/image/upload', { method: 'POST', body: fd });
     const data = await res.json();
@@ -217,6 +237,7 @@ async function uploadPhoto(e) {
       document.getElementById('photoStatus').style.color = '#EF233C';
     }
   } catch(e) {
+    console.log('Upload error:', e);
     document.getElementById('photoStatus').textContent = '❌ Error!';
     document.getElementById('photoStatus').style.color = '#EF233C';
   }
