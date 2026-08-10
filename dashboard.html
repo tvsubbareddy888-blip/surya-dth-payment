@@ -240,7 +240,7 @@ function renderList(data) {
         <div class="item-mid">
           <span class="mobile-num">📱 ${r.mobile || '–'}</span>
           ${r.vccdsn ? `<span class="vc-num">🔢 VC: ${r.vccdsn}</span>` : ''}
-          ${r.photo_url ? `<a href="${r.photo_url}" target="_blank" style="color:#FFD166;font-size:11px;font-family:DM Mono,monospace;">📸 Photo చూడండి</a>` : ''}
+          ${r.photo_url ? `<a href="${r.photo_url}" target="_blank" style="color:#FFD166;font-size:11px;font-family:DM Mono,monospace;text-decoration:none;">📸 Photo చూడండి</a>` : ''}
         </div>
         <div class="item-bot">
           <span class="date-time">${r.date ? new Date(r.date).toLocaleDateString('en-IN') : '–'}</span>

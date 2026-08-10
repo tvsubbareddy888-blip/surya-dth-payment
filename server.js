@@ -100,8 +100,9 @@ async function sendEmailNotification(data) {
 }
 
 app.get('/api/payment', async (req, res) => {
-  const { amount, mobile, customer, tech, village, vccdsn, service, photoUrl = '' } = req.query;
+  const { amount, mobile, customer, tech, village, vccdsn, service, photoUrl = '', photoId = '' } = req.query;
   console.log('photo_url received:', photoUrl);
+  console.log('photo_id received:', photoId);
   if (!amount || !mobile || !customer) return res.json({ error: "Missing fields" });
   const orderId = "SDH_" + Date.now();
   try {
@@ -138,7 +139,8 @@ app.get('/api/payment', async (req, res) => {
       '&vccdsn=' + encodeURIComponent(vccdsn||"") +
       '&service=' + encodeURIComponent(service||"") +
       '&order_id=' + encodeURIComponent(orderId) +
-      '&photo_url=' + encodeURIComponent(photoUrl||"");
+      '&photo_url=' + encodeURIComponent(photoUrl||"") +
+      '&photo_id=' + encodeURIComponent(photoId||"");
     const saveRes = await fetch(saveUrl).catch((e) => console.log('Save error:', e.toString()));
     if (saveRes) {
       const saveData = await saveRes.json().catch(() => {});
