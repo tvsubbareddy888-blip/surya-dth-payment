@@ -139,7 +139,6 @@ app.get('/api/payment', async (req, res) => {
       '&vccdsn=' + encodeURIComponent(vccdsn||"") +
       '&service=' + encodeURIComponent(service||"") +
       '&order_id=' + encodeURIComponent(orderId) +
-      '&photo_url=' + encodeURIComponent(photoUrl||"") +
       '&photo_id=' + encodeURIComponent(photoId||"");
     const saveRes = await fetch(saveUrl).catch((e) => console.log('Save error:', e.toString()));
     if (saveRes) {
