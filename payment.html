@@ -153,6 +153,7 @@ let cashfree = null;
 let isProcessing = false;
 let codeReader = null;
 let allCustomers = [];
+let globalPhotoUrl = '';
 
 // URL నుండి tech parameter తీసుకో
 const urlParams = new URLSearchParams(window.location.search);
@@ -252,13 +253,38 @@ function resetBtn() {
   document.getElementById('statusBox').style.display = 'none';
 }
 
-function photoSelected() {
+async function photoSelected() {
   const cam = document.getElementById('cameraFile');
   const gal = document.getElementById('galleryFile');
   const file = (cam.files && cam.files[0]) ? cam.files[0] : (gal.files && gal.files[0]) ? gal.files[0] : null;
   if (file) {
-    document.getElementById('photoStatus').textContent = '✅ Photo ready! (' + (file.size/1024).toFixed(0) + ' KB)';
-    document.getElementById('photoStatus').style.color = '#06D6A0';
+    document.getElementById('photoStatus').textContent = '⏳ Uploading...';
+    document.getElementById('photoStatus').style.color = '#FFD166';
+    try {
+      const CLOUD_NAME = 'zlogzqnj';
+      const UPLOAD_PRESET = 'surya_dth';
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', UPLOAD_PRESET);
+      fd.append('folder', 'surya-dth');
+      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+        method: 'POST', body: fd
+      });
+      const cloudData = await cloudRes.json();
+      if (cloudData.secure_url) {
+        globalPhotoUrl = cloudData.secure_url;
+        document.getElementById('photoStatus').textContent = '✅ Photo ready! (' + (file.size/1024).toFixed(0) + ' KB)';
+        document.getElementById('photoStatus').style.color = '#06D6A0';
+        console.log('Photo uploaded:', globalPhotoUrl);
+      } else {
+        document.getElementById('photoStatus').textContent = '❌ Upload failed!';
+        document.getElementById('photoStatus').style.color = '#EF233C';
+      }
+    } catch(e) {
+      console.log('Upload error:', e);
+      document.getElementById('photoStatus').textContent = '❌ Upload failed!';
+      document.getElementById('photoStatus').style.color = '#EF233C';
+    }
   }
 }
 
@@ -287,28 +313,8 @@ async function startPayment() {
   let photoUrl = '';
 
   // Photo Cloudinary కి direct upload
-  console.log('Photo file check:', photoFile ? photoFile.name : 'NO FILE');
-  if (photoFile) {
-    showStatus('loading', '📸 Photo upload అవుతోంది...');
-    try {
-      const CLOUD_NAME = 'zlogzqnj';
-      const UPLOAD_PRESET = 'surya_dth';
-      const fd = new FormData();
-      fd.append('file', photoFile);
-      fd.append('upload_preset', UPLOAD_PRESET);
-      fd.append('folder', 'surya-dth');
-      console.log('Uploading to Cloudinary...');
-      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST',
-        body: fd
-      });
-      const cloudData = await cloudRes.json();
-      console.log('Cloudinary response:', cloudData.secure_url || JSON.stringify(cloudData.error));
-      if (cloudData.secure_url) photoUrl = cloudData.secure_url;
-    } catch(e) {
-      console.log('Photo upload failed:', e.toString());
-    }
-  }
+  const photoUrl = globalPhotoUrl || '';
+  console.log('Photo URL being sent:', photoUrl);
 
   showStatus('loading', 'Cashfree తో కనెక్ట్ అవుతోంది...');
 
