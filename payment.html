@@ -33,6 +33,8 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .vc-wrap{display:flex;gap:8px;}
 .vc-wrap input{flex:1;}
 .scan-btn{background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:11px 13px;cursor:pointer;font-size:18px;}
+.photo-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.photo-btn{background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;font-family:'DM Mono',monospace;}
 .divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:20px 0;}
 .amount-wrap{position:relative;}
 .amount-wrap .rs{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--orange);font-weight:700;font-size:18px;}
@@ -66,10 +68,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <div class="card">
     <div class="section-label">📋 వివరాలు</div>
     <div class="grid">
-      <div class="field">
+      <div class="field" id="techField">
         <label>టెక్నీషియన్</label>
-        <div class="tech-display" id="techDisplay">Loading...</div>
-        <input type="hidden" id="tech">
+        <div class="select-wrap">
+          <select id="tech">
+            <option value="Mahesh">Mahesh</option>
+            <option value="Ramanji">Ramanji</option>
+            <option value="Viswanath">Viswanath</option>
+            <option value="Mohan">Mohan</option>
+          </select>
+        </div>
       </div>
       <div class="field">
         <label>విలేజ్</label>
@@ -81,27 +89,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </div>
       <div class="field">
         <label>మొబైల్</label>
-        <input type="tel" id="mobile" placeholder="10 అంకెలు" maxlength="10" required
-          onpaste="handleMobilePaste(event)"
-          oninput="cleanMobile(this)"
-          onblur="autoFillVC()">
+        <input type="tel" id="mobile" placeholder="10 అంకెలు" maxlength="10" required onpaste="handleMobilePaste(event)" oninput="cleanMobile(this)" onblur="autoFillVC()">
       </div>
       <div class="field">
         <label>VC / CDSN</label>
         <div class="vc-wrap">
           <input type="text" id="vccdsn" placeholder="నంబర్ లేదా Scan">
-          <button class="scan-btn" onclick="openScanner()" title="Barcode Scan">📷</button>
+          <button class="scan-btn" onclick="openScanner()">📷</button>
         </div>
-      </div>
-      <div class="field full">
-        <label>📸 STB Photo (Optional)</label>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <button type="button" onclick="document.getElementById('cameraFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;">📷 Camera</button>
-          <button type="button" onclick="document.getElementById('galleryFile').click()" style="background:rgba(255,107,0,0.15);border:1px solid rgba(255,107,0,0.3);color:var(--orange);border-radius:10px;padding:10px 14px;cursor:pointer;font-size:13px;">🖼️ Gallery</button>
-          <span id="photoStatus" style="font-size:12px;color:#8888AA;">Photo select చేయండి</span>
-        </div>
-        <input type="file" id="cameraFile" accept="image/*" capture="environment" style="display:none;">
-        <input type="file" id="galleryFile" accept="image/*" style="display:none;">
       </div>
       <div class="field full">
         <label>సర్వీస్</label>
@@ -113,6 +108,16 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
             <option value="New Box">New Box</option>
           </select>
         </div>
+      </div>
+      <div class="field full">
+        <label>📸 STB Photo (Optional)</label>
+        <div class="photo-btns">
+          <button type="button" class="photo-btn" onclick="document.getElementById('cameraFile').click()">📷 Camera</button>
+          <button type="button" class="photo-btn" onclick="document.getElementById('galleryFile').click()">🖼️ Gallery</button>
+          <span id="photoStatus" style="font-size:12px;color:#8888AA;padding:10px 0;">Photo select చేయండి</span>
+        </div>
+        <input type="file" id="cameraFile" accept="image/*" capture="environment" style="display:none;">
+        <input type="file" id="galleryFile" accept="image/*" style="display:none;">
       </div>
     </div>
     <div class="divider"></div>
@@ -155,40 +160,59 @@ let codeReader = null;
 let allCustomers = [];
 let globalPhotoUrl = '';
 
-// URL నుండి tech parameter తీసుకో
-const urlParams = new URLSearchParams(window.location.search);
-const techParam = urlParams.get('tech');
-const validTechs = ['Mahesh', 'Ramanji', 'Viswanath', 'Mohan'];
+const CLOUD_NAME = 'zlogzqnj';
+const UPLOAD_PRESET = 'surya_dth';
 
 window.addEventListener("load", async () => {
-  document.getElementById('cameraFile').addEventListener('change', photoSelected);
-  document.getElementById('galleryFile').addEventListener('change', photoSelected);
   if (typeof Cashfree !== "undefined") cashfree = Cashfree({ mode: "production" });
 
-  // Tech set చేయి
+  // URL నుండి tech parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const techParam = urlParams.get('tech');
+  const validTechs = ['Mahesh', 'Ramanji', 'Viswanath', 'Mohan'];
+
   if (techParam && validTechs.includes(techParam)) {
-    document.getElementById('tech').value = techParam;
-    document.getElementById('techDisplay').textContent = '👨‍🔧 ' + techParam;
-  } else {
-    // Default — dropdown show చేయి
-    document.getElementById('techDisplay').outerHTML = `
-      <div class="select-wrap">
-        <select id="tech">
-          <option value="Mahesh">Mahesh</option>
-          <option value="Ramanji">Ramanji</option>
-          <option value="Viswanath">Viswanath</option>
-          <option value="Mohan">Mohan</option>
-        </select>
-      </div>`;
-    document.getElementById('techDisplay') && document.getElementById('techDisplay').remove();
+    const techField = document.getElementById('techField');
+    techField.innerHTML = '<label>టెక్నీషియన్</label><div class="tech-display">👨‍🔧 ' + techParam + '</div><input type="hidden" id="tech" value="' + techParam + '">';
   }
 
+  // Photo event listeners
+  document.getElementById('cameraFile').addEventListener('change', uploadPhoto);
+  document.getElementById('galleryFile').addEventListener('change', uploadPhoto);
+
+  // Load customer data
   try {
     const res = await fetch('/api/data?action=getdata');
     const data = await res.json();
     if (data.data) allCustomers = data.data;
   } catch(e) {}
 });
+
+async function uploadPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('photoStatus').textContent = '⏳ Uploading...';
+  document.getElementById('photoStatus').style.color = '#FFD166';
+  try {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('upload_preset', UPLOAD_PRESET);
+    fd.append('folder', 'surya-dth');
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.secure_url) {
+      globalPhotoUrl = data.secure_url;
+      document.getElementById('photoStatus').textContent = '✅ Photo ready!';
+      document.getElementById('photoStatus').style.color = '#06D6A0';
+    } else {
+      document.getElementById('photoStatus').textContent = '❌ Failed!';
+      document.getElementById('photoStatus').style.color = '#EF233C';
+    }
+  } catch(e) {
+    document.getElementById('photoStatus').textContent = '❌ Error!';
+    document.getElementById('photoStatus').style.color = '#EF233C';
+  }
+}
 
 function cleanMobileNumber(raw) {
   let num = raw.replace(/\D/g, '');
@@ -200,9 +224,8 @@ function cleanMobileNumber(raw) {
 function handleMobilePaste(event) {
   event.preventDefault();
   const pasted = (event.clipboardData || window.clipboardData).getData('text');
-  const cleaned = cleanMobileNumber(pasted);
-  document.getElementById('mobile').value = cleaned;
-  if (cleaned.length === 10) autoFillVC();
+  document.getElementById('mobile').value = cleanMobileNumber(pasted);
+  if (document.getElementById('mobile').value.length === 10) autoFillVC();
 }
 
 function cleanMobile(input) {
@@ -253,42 +276,7 @@ function resetBtn() {
   document.getElementById('statusBox').style.display = 'none';
 }
 
-async function photoSelected() {
-  const cam = document.getElementById('cameraFile');
-  const gal = document.getElementById('galleryFile');
-  const file = (cam.files && cam.files[0]) ? cam.files[0] : (gal.files && gal.files[0]) ? gal.files[0] : null;
-  if (file) {
-    document.getElementById('photoStatus').textContent = '⏳ Uploading...';
-    document.getElementById('photoStatus').style.color = '#FFD166';
-    try {
-      const CLOUD_NAME = 'zlogzqnj';
-      const UPLOAD_PRESET = 'surya_dth';
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('upload_preset', UPLOAD_PRESET);
-      fd.append('folder', 'surya-dth');
-      const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: 'POST', body: fd
-      });
-      const cloudData = await cloudRes.json();
-      if (cloudData.secure_url) {
-        globalPhotoUrl = cloudData.secure_url;
-        document.getElementById('photoStatus').textContent = '✅ Photo ready! (' + (file.size/1024).toFixed(0) + ' KB)';
-        document.getElementById('photoStatus').style.color = '#06D6A0';
-        console.log('Photo uploaded:', globalPhotoUrl);
-      } else {
-        document.getElementById('photoStatus').textContent = '❌ Upload failed!';
-        document.getElementById('photoStatus').style.color = '#EF233C';
-      }
-    } catch(e) {
-      console.log('Upload error:', e);
-      document.getElementById('photoStatus').textContent = '❌ Upload failed!';
-      document.getElementById('photoStatus').style.color = '#EF233C';
-    }
-  }
-}
-
-async function startPayment() {
+function startPayment() {
   if (isProcessing) return;
   const customer = document.getElementById('customer').value.trim();
   const mobile = document.getElementById('mobile').value.trim();
@@ -297,10 +285,6 @@ async function startPayment() {
   const village = document.getElementById('village').value.trim();
   const vccdsn = document.getElementById('vccdsn').value.trim();
   const service = document.getElementById('service').value;
-  const camEl = document.getElementById('cameraFile');
-  const galEl = document.getElementById('galleryFile');
-  const photoFile = (camEl && camEl.files && camEl.files[0]) ? camEl.files[0] : (galEl && galEl.files && galEl.files[0]) ? galEl.files[0] : null;
-  console.log('Photo file:', photoFile ? photoFile.name : 'none');
 
   if (!customer || !mobile || !amount) { showStatus('error', '⚠️ పేరు, మొబైల్, మొత్తం తప్పనిసరి!'); return; }
   if (mobile.length !== 10) { showStatus('error', '⚠️ 10 అంకెల మొబైల్ నంబర్!'); return; }
@@ -309,16 +293,12 @@ async function startPayment() {
   isProcessing = true;
   document.getElementById('payBtn').disabled = true;
   document.getElementById('payBtn').innerHTML = '⏳ Processing...';
-
-  let photoUrl = '';
-
-  // Photo Cloudinary కి direct upload
-  const photoUrl = globalPhotoUrl || '';
-  console.log('Photo URL being sent:', photoUrl);
-
   showStatus('loading', 'Cashfree తో కనెక్ట్ అవుతోంది...');
 
-  const params = new URLSearchParams({ tech, village, customer, mobile, vccdsn, service, amount, photoUrl });
+  const params = new URLSearchParams({
+    tech, village, customer, mobile, vccdsn, service, amount,
+    photoUrl: globalPhotoUrl
+  });
 
   fetch(`/api/payment?${params.toString()}`)
     .then(r => r.json())

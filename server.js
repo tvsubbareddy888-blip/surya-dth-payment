@@ -100,7 +100,8 @@ async function sendEmailNotification(data) {
 }
 
 app.get('/api/payment', async (req, res) => {
-  const { amount, mobile, customer, tech, village, vccdsn, service, photoUrl } = req.query;
+  const { amount, mobile, customer, tech, village, vccdsn, service, photoUrl = '' } = req.query;
+  console.log('photo_url received:', photoUrl);
   if (!amount || !mobile || !customer) return res.json({ error: "Missing fields" });
   const orderId = "SDH_" + Date.now();
   try {
