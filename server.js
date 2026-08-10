@@ -128,23 +128,22 @@ app.get('/api/payment', async (req, res) => {
     const cfData = await cfRes.json();
     if (!cfData.payment_session_id) return res.json({ error: JSON.stringify(cfData) });
 
-    // Save via POST to handle photo_url correctly
-    await fetch(SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'save',
-        amount: amount,
-        tech: tech||"",
-        customer: customer,
-        mobile: mobile,
-        village: village||"",
-        vccdsn: vccdsn||"",
-        service: service||"",
-        order_id: orderId,
-        photo_url: photoUrl||""
-      })
-    }).catch((e) => console.log('Save error:', e.toString()));
+    // Save via GET
+    const saveUrl = SCRIPT_URL + '?action=save' +
+      '&amount=' + encodeURIComponent(amount) +
+      '&tech=' + encodeURIComponent(tech||"") +
+      '&customer=' + encodeURIComponent(customer) +
+      '&mobile=' + encodeURIComponent(mobile) +
+      '&village=' + encodeURIComponent(village||"") +
+      '&vccdsn=' + encodeURIComponent(vccdsn||"") +
+      '&service=' + encodeURIComponent(service||"") +
+      '&order_id=' + encodeURIComponent(orderId) +
+      '&photo_url=' + encodeURIComponent(photoUrl||"");
+    const saveRes = await fetch(saveUrl).catch((e) => console.log('Save error:', e.toString()));
+    if (saveRes) {
+      const saveData = await saveRes.json().catch(() => {});
+      console.log('Save result:', JSON.stringify(saveData));
+    }
 
     res.json({ payment_session_id: cfData.payment_session_id, order_id: orderId });
   } catch (error) {
